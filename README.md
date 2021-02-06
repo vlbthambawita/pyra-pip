@@ -1,1 +1,1 @@
-# pyra-pip
+# pyra-pytorch
