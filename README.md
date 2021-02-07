@@ -48,3 +48,12 @@ transforms = None --> Other type of transformations using in Pytorch.
 '''
 ```
 
+# Sample ipython notebook
+
+[notebook](https://github.com/vlbthambawita/pyra-pytorch/blob/main/tutorial/load_data_with_PYRA.ipynb)
+
+
+# Contact us:
+```
+vajira@simula.no | michael@simula.no
+```
