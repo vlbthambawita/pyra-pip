@@ -1,9 +1,9 @@
 # pyra-pytorch
 
-This is a dataset class suporting Pytorch datasets. This implementation is based on the augmentaiton method discuss in the following paper "Pyramid-Focus-Augmentation: Medical Image Segmentation
-with Step-Wise Focus" and the original github repository. 
 
-[PAPER](https://arxiv.org/pdf/2012.07430v1.pdf) | [Original implementaiton in GitHub](https://vlbthambawita.github.io/PYRA/)
+### This is a package suporting Pytorch datasets. This implementation is based on the augmentation method discussed in the paper "Pyramid-Focus-Augmentation: Medical Image Segmentation with Step-Wise Focus" ([PDF](https://arxiv.org/pdf/2012.07430v1.pdf)) and the original github repository: [PYRA](https://vlbthambawita.github.io/PYRA/).
+
+
 
 
 
@@ -23,7 +23,7 @@ with Step-Wise Focus" and the original github repository.
 pip install pyra-pytorch
 ```
 
-### Create a dataset with gird sizes which are going to be used as augmentation in the training process. If you want to get only the original mask, then, you have to pass image size as the gird size. 
+### Creating a PYRA augmented dataset:
 
 ```python
 from pyra_pytorch import PYRADataset
