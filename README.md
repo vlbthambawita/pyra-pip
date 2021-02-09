@@ -1,7 +1,7 @@
 # pyra-pytorch
 
 
-### This is a package suporting Pytorch datasets. This implementation is based on the augmentation method discussed in the paper "Pyramid-Focus-Augmentation: Medical Image Segmentation with Step-Wise Focus" ([PDF](https://arxiv.org/pdf/2012.07430v1.pdf)) and the original github repository: [PYRA](https://vlbthambawita.github.io/PYRA/).
+### This is a package supporting Pytorch datasets. This implementation is based on the augmentation method discussed in the paper "Pyramid-Focus-Augmentation: Medical Image Segmentation with Step-Wise Focus" ([PDF](https://arxiv.org/pdf/2012.07430v1.pdf)) and the original github repository: [PYRA](https://vlbthambawita.github.io/PYRA/).
 
 
 
@@ -54,6 +54,5 @@ transforms = None --> Other type of transformations using in Pytorch.
 
 
 # Contact us:
-```
+
 vajira@simula.no | michael@simula.no
-```
