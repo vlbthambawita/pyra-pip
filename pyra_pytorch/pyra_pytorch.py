@@ -191,3 +191,150 @@ class DatasetWithGridEncoding(object):
 
           
         return {"img":img, "grid_encode": grid_encode, "mask":mask}
+
+
+
+class DatasetWithGridEncodingFromFilePaths(object):
+    """
+    A class of Dataset whch is supported for Pytorch.
+
+    ...
+
+    Attributes
+    ----------
+    img_paths_file: str
+        A file with all paths of images. File should have one path (absolute path) per line. 
+
+    mask_paths_file: str
+        A file with all paths of masks. File should have one path (absolute path) per line. Please use the image names as prefix for mask's names to find correct mask for correct image.
+
+    img_size: int
+        A size of image. Image width and height are resized into this given size.
+
+    grid_sizes: int array
+        A array of int sizes which is used as grid sizes (default is  [2,4,8,16,32,64,128,256])
+
+    transforms: Pytorch transforms
+        Other type of transforms which come with Pytorch library. 
+
+    Methods
+    -------
+    __getitem__(idx):
+        Get an single data item from the dataset with image, gird_encoding image and correspondig mask.
+    """
+
+    def __init__(self, img_paths_file, mask_paths_file, img_size = 256, grid_sizes=[2,4,8,16,32,64,128,256] , transforms = None):
+        """
+        Parameters
+        ----------
+        img_paths_file: str
+        A file with all paths of images. File should have one path (absolute path) per line. 
+
+        mask_paths_file: str
+        A file with all paths of masks. File should have one path (absolute path) per line. Please use the image names as prefix for mask's names to find correct mask for correct image.
+
+        img_size: int
+            A size of image. Image width and height are resized into this given size.
+
+        grid_sizes: int array
+            A array of int sizes which is used as grid sizes (default is  [2,4,8,16,32,64,128,256])
+
+        transforms: Pytorch transforms
+            Other type of transforms which come with Pytorch library.
+        """
+
+        self.img_paths_file = img_paths_file
+        self.mask_paths_file = mask_paths_file
+
+        self.img_size = img_size
+
+        self.transforms = transforms
+
+        self.length_of_grid_sizes = len(grid_sizes)
+
+
+        # Reading files lines to lists
+        with open(self.img_paths_file) as f:
+            self.img_paths = f.readlines()
+
+        self.img_paths = [x.strip() for x in self.img_paths] # remove /n line chatacter 
+
+        with open(self.mask_paths_file) as f:
+            self.mask_paths = f.readlines()
+
+        self.mask_paths = [x.strip() for x in self.mask_paths] # remove /n line chatacter 
+
+        self.imgs = list(sorted(self.img_paths))
+        self.masks = list(sorted(self.mask_paths))
+
+        self.num_imgs = len(self.imgs)
+
+        self.imgs = self.imgs * self.length_of_grid_sizes
+        self.masks = self.masks * self.length_of_grid_sizes
+
+        self.grid_sizes_repeated = np.repeat(grid_sizes, self.num_imgs)
+
+        self.all_in_one = list(zip(self.imgs, self.masks, self.grid_sizes_repeated)) #(img, mask, grid_size)
+
+       # self.imgs_repeated
+        #self.masks_repea
+
+    def __len__(self):
+        return len(self.all_in_one)
+
+
+    def __getitem__(self, idx):
+        """ Get an single data item from the dataset with image, gird_encoding image and correspondig mask. 
+        
+        Main function which return data for Pytorch dataloader.
+
+        Parameters
+        ---------
+        idx: index of the datarecord to be returned. 
+
+        Returns
+        -------
+        dictionary
+            A dictionary with three keys and corresponding values, {"img":img, "grid_encode": grid_encode, "mask":mask}
+        """
+
+        img_path = self.all_in_one[idx][0] # 0th one= image
+        mask_path = self.all_in_one[idx][1] # 1st one = mask
+        grid_size = self.all_in_one[idx][2] # 2nd one = grid size
+
+        img_size = self.img_size
+
+        img = Image.open(img_path)
+        mask = Image.open(mask_path)
+
+        grid_encode = generate_checkerboard(img_size, img_size, grid_size)#[:, :, 0]
+    
+
+        # resizing
+        img = img.resize((img_size, img_size), Image.NEAREST)
+        mask = mask.resize((img_size, img_size), Image.NEAREST)
+
+        # covert to numpy
+
+        img = np.array(img)
+        mask = np.array(mask) #
+
+
+
+        # clean mask values (this is done to remove small values in mask images)
+        mask = (mask > 128) * 255 # if mask value > 128, set it to 255 (this will remove 254, 253 values and 1,2 etc)
+         
+        mask = get_tiled_ground_truth(mask, grid_size)
+        #mask = mask[:, :, 0]
+
+       
+
+        if self.transforms is not None:
+            # img, target= self.transforms(img, target)
+
+            img = self.transforms(img)
+            mask = self.transforms(mask)
+            grid_encode = self.transforms(grid_encode)
+
+          
+        return {"img":img, "grid_encode": grid_encode, "mask":mask}
