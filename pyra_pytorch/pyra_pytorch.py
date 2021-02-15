@@ -20,7 +20,12 @@ def get_tiled_ground_truth(mask, grid_size):
     width = mask.shape[1]
     tile_height = height / grid_size
     tile_width = width / grid_size
-    mask = mask[:, : , 0] # get only 0th channel
+
+    if len(mask.shape) ==3:
+        mask = mask[:, : , 0] # get only 0th channel
+
+    else:
+        mask = mask
     
     tile_mask = np.zeros_like(mask, dtype=np.uint8)
 
