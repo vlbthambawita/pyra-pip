@@ -58,10 +58,36 @@ def get_tiled_ground_truth(mask, grid_size):
             
         #tile = 
     tile_mask = tile_mask.astype(np.uint8)
+
+    # tile_mask = np.stack((tile_mask,)*3, axis=-1)
     #plt.imshow(tile_mask)
     return tile_mask
 
 
+def one_hot_encode(label, label_values):
+    """
+    Convert a mask into  one-hot format
+    by replacing each pixel value with a vector of length num_classes
+    
+    Parameters
+    ----------
+    label: array 
+        The 2D array segmentation image label
+
+    label_values: [r, g, b] array for each class
+        
+    # Returns
+        A 2D array with the same width and hieght as the input, but
+        with a depth size of num_classes
+    """
+    semantic_map = []
+    for colour in label_values:
+        equality = np.equal(label, colour)
+        class_map = np.all(equality, axis = -1)
+        semantic_map.append(class_map)
+    semantic_map = np.stack(semantic_map, axis=-1)
+
+    return semantic_map.astype('float')
 
 
 class DatasetWithGridEncoding(object):
@@ -86,6 +112,8 @@ class DatasetWithGridEncoding(object):
 
     transforms: Pytorch transforms
         Other type of transforms which come with Pytorch library. 
+    
+    label_values: [r,g,b] value array for segmentation classes
 
     Methods
     -------
@@ -93,7 +121,7 @@ class DatasetWithGridEncoding(object):
         Get an single data item from the dataset with image, gird_encoding image and correspondig mask.
     """
 
-    def __init__(self, imgs_root, masks_root, img_size = 256, grid_sizes=[2,4,8,16,32,64,128,256] , transforms = None):
+    def __init__(self, imgs_root, masks_root, img_size = 256, grid_sizes=[2,4,8,16,32,64,128,256] , transforms = None, label_values=None):
         """
         Parameters
         ----------
@@ -111,6 +139,8 @@ class DatasetWithGridEncoding(object):
 
         transforms: Pytorch transforms
             Other type of transforms which come with Pytorch library.
+
+        label_values: [r,g,b] value array for segmentation classes
         """
 
         self.imgs_root = imgs_root
@@ -119,6 +149,7 @@ class DatasetWithGridEncoding(object):
         self.img_size = img_size
 
         self.transforms = transforms
+        self.label_values = label_values
 
         self.length_of_grid_sizes = len(grid_sizes)
 
@@ -185,6 +216,10 @@ class DatasetWithGridEncoding(object):
         mask = get_tiled_ground_truth(mask, grid_size)
         #mask = mask[:, :, 0]
 
+        #one hot encoding
+        if self.label_values is not None:
+            mask = one_hot_encode(mask, self.label_values)
+
        
 
         if self.transforms is not None:
@@ -193,6 +228,8 @@ class DatasetWithGridEncoding(object):
             img = self.transforms(img)
             mask = self.transforms(mask)
             grid_encode = self.transforms(grid_encode)
+
+      
 
           
         return {"img":img, "grid_encode": grid_encode, "mask":mask}
@@ -222,13 +259,15 @@ class DatasetWithGridEncodingFromFilePaths(object):
     transforms: Pytorch transforms
         Other type of transforms which come with Pytorch library. 
 
+    label_values: [r,g,b] value array for segmentation classes
+
     Methods
     -------
     __getitem__(idx):
         Get an single data item from the dataset with image, gird_encoding image and correspondig mask.
     """
 
-    def __init__(self, img_paths_file, mask_paths_file, img_size = 256, grid_sizes=[2,4,8,16,32,64,128,256] , transforms = None):
+    def __init__(self, img_paths_file, mask_paths_file, img_size = 256, grid_sizes=[2,4,8,16,32,64,128,256] , transforms = None, label_values=None):
         """
         Parameters
         ----------
@@ -246,6 +285,8 @@ class DatasetWithGridEncodingFromFilePaths(object):
 
         transforms: Pytorch transforms
             Other type of transforms which come with Pytorch library.
+
+        label_values: [r,g,b] value array for segmentation classes
         """
 
         self.img_paths_file = img_paths_file
@@ -254,6 +295,7 @@ class DatasetWithGridEncodingFromFilePaths(object):
         self.img_size = img_size
 
         self.transforms = transforms
+        self.label_values = label_values
 
         self.length_of_grid_sizes = len(grid_sizes)
 
@@ -331,6 +373,10 @@ class DatasetWithGridEncodingFromFilePaths(object):
          
         mask = get_tiled_ground_truth(mask, grid_size)
         #mask = mask[:, :, 0]
+
+        #one hot encoding
+        if self.label_values is not None:
+            mask = one_hot_encode(mask, self.label_values)
 
        
 
