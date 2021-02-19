@@ -389,3 +389,141 @@ class DatasetWithGridEncodingFromFilePaths(object):
 
           
         return {"img":img, "grid_encode": grid_encode, "mask":mask}
+
+
+
+
+class DatasetWithGridEncodingFromDataFrame(object):
+    """
+    A class of Dataset whch is supported for Pytorch.
+
+    ...
+
+    Attributes
+    ----------
+    df : pd.DataFrame
+        A dataframe with two colomns: image_path and mask_path. Each column has absolute path of image and maks.
+
+    img_size: int
+        A size of image. Image width and height are resized into this given size.
+
+    grid_sizes: int array
+        A array of int sizes which is used as grid sizes (default is  [2,4,8,16,32,64,128,256])
+
+    transforms: Pytorch transforms
+        Other type of transforms which come with Pytorch library. 
+
+    label_values: [r,g,b] value array for segmentation classes
+
+    Methods
+    -------
+    __getitem__(idx):
+        Get an single data item from the dataset with image, gird_encoding image and correspondig mask.
+    """
+
+    def __init__(self, df, img_size = 256, grid_sizes=[2,4,8,16,32,64,128,256] , transforms = None, label_values=None):
+        """
+        Parameters
+        ----------
+        df : pd.DataFrame
+            A dataframe with two colomns: image_path and mask_path. Each column has absolute path of image and maks.
+
+        img_size: int
+            A size of image. Image width and height are resized into this given size.
+
+        grid_sizes: int array
+            A array of int sizes which is used as grid sizes (default is  [2,4,8,16,32,64,128,256])
+
+        transforms: Pytorch transforms
+            Other type of transforms which come with Pytorch library.
+
+        label_values: [r,g,b] value array for segmentation classes
+        """
+
+        self.df = df
+        self.img_size = img_size
+
+        self.transforms = transforms
+        self.label_values = label_values
+
+        self.length_of_grid_sizes = len(grid_sizes)
+
+        self.imgs = list(self.df["image_path"])
+        self.masks = list(self.df["mask_path"])
+
+        self.num_imgs = len(self.df)
+
+
+        self.imgs = self.imgs * self.length_of_grid_sizes
+        self.masks = self.masks * self.length_of_grid_sizes
+
+        self.grid_sizes_repeated = np.repeat(grid_sizes, self.num_imgs)
+
+        self.all_in_one = list(zip(self.imgs, self.masks, self.grid_sizes_repeated)) #(img, mask, grid_size)
+
+       # self.imgs_repeated
+        #self.masks_repea
+
+    def __len__(self):
+        return len(self.all_in_one)
+
+
+    def __getitem__(self, idx):
+        """ Get an single data item from the dataset with image, gird_encoding image and correspondig mask. 
+        
+        Main function which return data for Pytorch dataloader.
+
+        Parameters
+        ---------
+        idx: index of the datarecord to be returned. 
+
+        Returns
+        -------
+        dictionary
+            A dictionary with three keys and corresponding values, {"img":img, "grid_encode": grid_encode, "mask":mask}
+        """
+
+        img_path = self.all_in_one[idx][0] # 0th one= image
+        mask_path = self.all_in_one[idx][1] # 1st one = mask
+        grid_size = self.all_in_one[idx][2] # 2nd one = grid size
+
+        img_size = self.img_size
+
+        img = Image.open(img_path)
+        mask = Image.open(mask_path)
+
+        grid_encode = generate_checkerboard(img_size, img_size, grid_size)#[:, :, 0]
+    
+
+        # resizing
+        img = img.resize((img_size, img_size), Image.NEAREST)
+        mask = mask.resize((img_size, img_size), Image.NEAREST)
+
+        # covert to numpy
+
+        img = np.array(img)
+        mask = np.array(mask) #
+
+
+
+        # clean mask values (this is done to remove small values in mask images)
+        mask = (mask > 128) * 255 # if mask value > 128, set it to 255 (this will remove 254, 253 values and 1,2 etc)
+         
+        mask = get_tiled_ground_truth(mask, grid_size)
+        #mask = mask[:, :, 0]
+
+        #one hot encoding
+        if self.label_values is not None:
+            mask = one_hot_encode(mask, self.label_values)
+
+       
+
+        if self.transforms is not None:
+            # img, target= self.transforms(img, target)
+
+            img = self.transforms(img)
+            mask = self.transforms(mask)
+            grid_encode = self.transforms(grid_encode)
+
+          
+        return {"img":img, "grid_encode": grid_encode, "mask":mask}
