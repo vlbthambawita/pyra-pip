@@ -52,7 +52,7 @@ transforms = None --> Other type of transformations using in Pytorch.
 ### Creating a PYRA augmented dataset using path list files:
 
 ```python
-from pyra_pytorch import PYRADataset
+from pyra_pytorch import PYRADatasetFromPaths
 
 dataset = PYRADatasetFromPaths("path_to_the_file_with_image_paths", # file containing all image paths
                       "path_to_file_with_mask_paths", # file containing all mask paths - files´s names of this folder should have image names as prefix to find correct image and mask pairs.
@@ -64,6 +64,29 @@ dataset = PYRADatasetFromPaths("path_to_the_file_with_image_paths", # file conta
 path_to_the_file_with_image_paths" --> A file with all paths of images. File should have one path (absolute path) per line. 
 
 path_to_file_with_mask_paths" --> A file with all paths of masks. The file should have one path (absolute path) per line. Please use the image names as prefix for mask's names to find correct mask for correct image.
+
+img_size = 256 --> height and width of image to resize
+
+grid_sizes=[2,4,8,16,32,64,128,256]  --> Gird sizes to use as grid augmentation. Note that, the image size after resizing (in this case, it is 256) shoud be divisible by these grid sizes.
+                      
+transforms = None --> Other type of transformations using in Pytorch. 
+
+'''
+```
+
+
+## Creating a PYRA augmented dataset using path list files:
+
+```python
+from pyra_pytorch import PYRADatasetFromDF
+
+dataset = PYRADatasetFromDF(df, # A dataframe with two colomns: image_path and mask_path. Each column has absolute path of image and maks.
+                      img_size = 256,  # height and width of image to resize
+                      grid_sizes=[2,4,8,16,32,64,128,256] , # Gird sizes to use as grid augmentation. Note that, the image size after resizing ()
+                      transforms = None
+                      )
+'''
+df --> A dataframe with two colomns: image_path and mask_path. Each column has absolute path of image and maks.
 
 img_size = 256 --> height and width of image to resize
 
