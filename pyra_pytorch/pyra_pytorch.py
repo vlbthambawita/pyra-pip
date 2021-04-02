@@ -193,8 +193,8 @@ class DatasetWithGridEncoding(object):
 
         img_size = self.img_size
 
-        img = Image.open(img_path)
-        mask = Image.open(mask_path)
+        img = Image.open(img_path).convert('RGB')
+        mask = Image.open(mask_path).convert('RGB')
 
         grid_encode = generate_checkerboard(img_size, img_size, grid_size)#[:, :, 0]
     
@@ -351,8 +351,8 @@ class DatasetWithGridEncodingFromFilePaths(object):
 
         img_size = self.img_size
 
-        img = Image.open(img_path)
-        mask = Image.open(mask_path)
+        img = Image.open(img_path).convert('RGB')
+        mask = Image.open(mask_path).convert('RGB')
 
         grid_encode = generate_checkerboard(img_size, img_size, grid_size)#[:, :, 0]
     
@@ -489,8 +489,8 @@ class DatasetWithGridEncodingFromDataFrame(object):
 
         img_size = self.img_size
 
-        img = Image.open(img_path)
-        mask = Image.open(mask_path)
+        img = Image.open(img_path).convert('RGB')
+        mask = Image.open(mask_path).convert('RGB')
 
         grid_encode = generate_checkerboard(img_size, img_size, grid_size)#[:, :, 0]
     

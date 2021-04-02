@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setuptools.setup(
     name="pyra-pytorch", # Replace with your own username
-    version="1.2.0",
+    version="1.3.0",
     author="Vajira Thambawita",
     author_email="vlbthambawita@gmail.com",
     description="Pyramid Focus Augmentation: Medical Image Segmentation with Step Wise Focus",
